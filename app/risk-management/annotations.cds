@@ -19,7 +19,7 @@ annotate service.Risks with @(
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Priority',
+            Label : '{i18n>Priority}',
             Value : prio_code,
         },
         {

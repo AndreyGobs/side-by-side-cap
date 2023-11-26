@@ -1,0 +1,70 @@
+<mvc:View
+    controllerName="riskmanagementfreestyle.controller.ListReport"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:semantic="sap.f.semantic"
+>
+    <semantic:SemanticPage
+        id="idListPage"
+        headerPinnable="false"
+        toggleHeaderOnTitleClick="false"
+    >
+        <semantic:titleHeading>
+            <Title id="idRisksPageTitle" text="{i18n>AppTitle}" />
+        </semantic:titleHeading>
+
+        <semantic:content>
+            <Table
+                id="idRisksTable"
+                width="auto"
+                items="{/Risks}"
+                growing="true"
+                growingScrollToLoad="true"
+                updateFinished=".onUpdateFinished"
+            >
+                <headerToolbar>
+                    <Toolbar id="idRisksTableTitle">
+                        <Title
+                            id="idTableHeader"
+                            text="{i18n>TableTitle}"
+                        />
+                    </Toolbar>
+                </headerToolbar>
+
+                <columns>
+                    <Column id="idTitleColumn">
+                        <Text
+                            text="{i18n>Title}"
+                            id="idTitleColumnTitle"
+                        />
+                    </Column>
+                    <Column id="idOescriptionColumn">
+                        <Text
+                            text="{i18n>Description}"
+                            id="idDescriptionColumnTitle"
+                        />
+                    </Column>
+                    <Column id="idOwnerColumn">
+                        <Text
+                            text="{i18n>Owner}"
+                            id="idOwnerColumnTitle"
+                        />
+                    </Column>
+                </columns>
+
+                <items>
+                    <ColumnListItem id="idRisksColumnListItem"
+                        type="Navigation"
+                        press=".onPress"
+                    >
+                        <cells>
+                            <ObjectIdentifier id="idColumnListItemTitle" text="{title}" />
+                            <Text id="idColumnListItemDescr" text="{miti/descr}" />
+                            <Text id="idColumnListItemOwner" text="{owner}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </semantic:content>
+    </semantic:SemanticPage>
+</mvc:View>
