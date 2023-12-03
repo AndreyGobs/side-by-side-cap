@@ -114,5 +114,34 @@ module.exports = cds.service.impl(async function() {
         return risks;
     });
 
+    this.before('getMitigation', async (req) => {
+        const ID = req.data.ID;
 
-  });
+        if (!ID || !isValidUUID(ID)) {
+
+            const error = new Error('Invalid or missing UUID parameter');
+            error.statusCode = 400; // Bad Request
+            throw error;
+        }
+
+        function isValidUUID(uuid) {
+            const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+            return uuidRegex.test(uuid);
+        }
+
+    });
+
+    // function returns mitigations which are related to risk
+    this.on('getMitigation', async (req, next) => {
+        const risk_ID = req.data.ID
+
+        // Fetching mitigations associated with each risk
+        const mitigations = await this.run(
+            SELECT.from(Mitigations).where({ 'risks.ID': risk_ID })
+        );
+    
+        return mitigations;
+    });
+
+
+});
