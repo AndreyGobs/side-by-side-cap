@@ -1,0 +1,95 @@
+<mvc:View
+    controllerName="riskmanagementfreestyle.controller.ObjectPage"
+    xmlns:mvc="sap.ui.core.mvc"
+	xmlns="sap.m"
+    xmlns:forms="sap.ui.layout.form"
+    xmlns:uxap="sap.uxap"
+	xmlns:layout="sap.ui.layout"
+    xmlns:core="sap.ui.core"
+	height="100%"
+>
+<uxap:ObjectPageLayout id="ObjectPageLayout" enableLazyLoading="true" upperCaseAnchorBar="false">
+		<uxap:headerTitle>
+			<uxap:ObjectPageDynamicHeaderTitle id="idObjectPageDynamicHeaderTitle">
+				<uxap:breadcrumbs>
+					<Breadcrumbs id="idBreadcrumbs">
+						<Link id="idBreadcrumbsLink" text="{i18n>Risks}" press="handleRisksLinkPress"/>
+					</Breadcrumbs>
+				</uxap:breadcrumbs>
+
+				<uxap:expandedHeading>
+					<FlexBox id="idHeaderFlexBox" fitContainer="true" alignItems="Center">
+						<Avatar id="idRiskAvatar" src="sap-icon://alert" displayShape="Square" class="sapUiTinyMarginEnd"/>
+						<Title id="idRiskTitle" text="{title}" wrapping="true"/>
+					</FlexBox>
+				</uxap:expandedHeading>
+
+				<uxap:snappedHeading>
+                    <FlexBox id="idHeaderFlexBox-2" fitContainer="true" alignItems="Center">
+						<Avatar id="idRiskAvatar-2" src="sap-icon://alert" displayShape="Square" class="sapUiTinyMarginEnd"/>
+						<Title id="idRiskTitle-2" text="{title}" wrapping="true"/>
+					</FlexBox>
+				</uxap:snappedHeading>
+
+				<uxap:expandedContent>
+					<Text id="idRiskDescr" text="{descr}"/>
+				</uxap:expandedContent>
+
+			</uxap:ObjectPageDynamicHeaderTitle>
+		</uxap:headerTitle>
+
+		<uxap:sections>
+			<uxap:ObjectPageSection id="idRiskOverviewSection" titleUppercase="false" title="{i18n>RiskOverview}" showTitle="false">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection id="idRiskDetailsSubsection" titleUppercase="false" showTitle="false">
+						<uxap:blocks>
+                        <forms:SimpleForm id="idRiskDetailsForm" editable="false" layout="ColumnLayout">
+
+                            <core:Title id="idRiskDetailsTitle" text="{i18n>RiskDetails}"/>
+
+                            <Label id="idRiskTitleLabel" text="{i18n>Title}" />
+                            <Text id="idRiskTitleText" text="{title}"/>
+
+                            <Label id="idRiskOwnerLabel" text="{i18n>Owner}" />
+                            <Text id="idRiskOwnerText" text="{owner}"/>
+
+                            <Label id="idRiskDescrLabel" text="{i18n>Description}" />
+                            <Text id="idRiskDescrText" text="{descr}"/>
+
+                            <Label id="idRiskPrioLabel" text="{i18n>Priority}" />
+                            <Text id="idRiskPrioText" text="{prio_code}"/>
+
+                            <Label id="idRiskImpactLabel" text="{i18n>Impact}" />
+                            <Text id="idRiskImpactText" text="{impact}"/>
+
+                        </forms:SimpleForm>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+            <uxap:ObjectPageSection id="idMitiOverviewSection" titleUppercase="false" title="{i18n>MitigationOverview}"  showTitle="false">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection id="idMitiDetailsSubsection" titleUppercase="false" showTitle="false">
+						<uxap:blocks>
+                        <forms:SimpleForm id="idMitiDetailsForm" editable="false" layout="ColumnLayout">
+
+                            <core:Title id="idMitiDetailsTitle" text="{i18n>MitigationDetails}"/>
+
+                            <Label id="idMitiDescrLabel" text="{i18n>Mitigation}" />
+                            <Text id="idMitiDescrText" text="{miti/descr}"/>
+
+                            <Label id="idMitiOwnerLabel" text="{i18n>Owner}" />
+                            <Text id="idMitiOwnerText" text="{miti/owner}"/>
+
+                            <Label id="idMitiTimelineLabel" text="{i18n>Timeline}" />
+                            <Text id="idMitiTimelineText" text="{miti/timeline}"/>
+
+                        </forms:SimpleForm>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+		</uxap:sections>
+	</uxap:ObjectPageLayout>
+
+</mvc:View>

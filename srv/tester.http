@@ -1,0 +1,9 @@
+### Read Risks
+GET http://localhost:4004/odata/v4/service/risk/Risks
+
+### Read Risks with expand business partner
+GET http://localhost:4004/odata/v4/service/risk/Risks?$filter=(IsActiveEntity%20eq%20false%20or%20SiblingEntity/IsActiveEntity%20eq%20null)&$select=HasActiveEntity,ID,IsActiveEntity,PrioCriticality,criticality,impact,owner,prio_code,title&$expand=bp($select=BusinessPartner,FullName),miti($select=ID,IsActiveEntity,descr),prio($select=code,descr)&$skip=0&$top=30
+
+
+### call getMitigation function
+GET http://localhost:4004/odata/v4/service/risk/getMitigation(ID=20466922-7d57-4e76-b14c-e53fd97dcb11)
