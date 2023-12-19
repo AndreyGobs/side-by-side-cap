@@ -1,84 +1,143 @@
-_schema-version: '3.1'
+_schema-version: "3.1"
 ID: risk-management
-version: 3.0.0
 description: "Template for the Learning Journey Building side-by-side extensions on SAP BTP"
+version: 3.0.0
+modules:
+- name: risk-management-srv
+  type: nodejs
+  path: gen/srv
+  requires:
+  - name: risk-management-auth
+  - name: risk-management-db
+  - name: risk-management-destination
+  provides:
+  - name: srv-api
+    properties:
+      srv-url: ${default-url}
+  parameters:
+    buildpack: nodejs_buildpack
+  build-parameters:
+    builder: npm
+- name: risk-management-db-deployer
+  type: hdb
+  path: gen/db
+  requires:
+  - name: risk-management-db
+  parameters:
+    buildpack: nodejs_buildpack
+- name: risk-management
+  type: approuter.nodejs
+  path: app/
+  requires:
+  - name: srv-api
+    group: destinations
+    properties:
+      forwardAuthToken: true
+      name: srv-api
+      url: ~{srv-url}
+  - name: risk-management-auth
+  - name: risk-management-destination
+    group: destinations
+    properties:
+      forwardAuthToken: false
+      name: ui5
+      url: https://ui5.sap.com
+  parameters:
+    disk-quota: 512M
+    keep-existing-routes: true
+    memory: 512M
+- name: risk-management-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: risk-management-html5-repo-host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - riskmanagement.zip
+      name: risk-management-fe
+      target-path: resources/
+    - artifacts:
+      - riskmanagementfreestyle.zip
+      name: risk-management-freestyle
+      target-path: resources/
+- name: risk-management-fe
+  type: html5
+  path: app/risk-management
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: risk-management-freestyle
+  type: html5
+  path: app/risk-management-freestyle
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: risk-management-auth
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      oauth2-configuration:
+        redirect-uris:
+        - https://**.hana.ondemand.com/login/callback
+      role-collections:
+      - description: Manage Risks
+        name: RiskManager-${org}-${space}
+        role-template-references:
+        - $XSAPPNAME.RiskManager
+      - description: View Risks
+        name: RiskViewer-${org}-${space}
+        role-template-references:
+        - $XSAPPNAME.RiskViewer
+      tenant-mode: dedicated
+      xsappname: risk-management-${org}-${space}
+    path: ./xs-security.json
+    service: xsuaa
+    service-plan: application
+- name: risk-management-db
+  type: com.sap.xs.hdi-container
+  parameters:
+    service: hana
+    service-plan: hdi-shared
+- name: risk-management-destination
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          existing_destinations_policy: update
+    service: destination
+    service-plan: lite
+- name: risk-management-html5-repo-host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-plan: app-host
 parameters:
+  deploy_mode: html5-repo
   enable-parallel-deployments: true
 build-parameters:
   before-all:
-    - builder: custom
-      commands:
-        - npx cds build --production
-modules:
-  - name: risk-management-srv
-    type: nodejs
-    path: gen/srv
-    parameters:
-      buildpack: nodejs_buildpack
-    build-parameters:
-      builder: npm
-    provides:
-      - name: srv-api # required by consumers of CAP services (e.g. approuter)
-        properties:
-          srv-url: ${default-url}
-    requires:
-      - name: risk-management-auth
-      - name: risk-management-db
-      - name: risk-management-destination
-
-  - name: risk-management-db-deployer
-    type: hdb
-    path: gen/db
-    parameters:
-      buildpack: nodejs_buildpack
-    requires:
-      - name: risk-management-db
-
-  - name: risk-management
-    type: approuter.nodejs
-    path: app/
-    parameters:
-      keep-existing-routes: true
-      disk-quota: 256M
-      memory: 256M
-    requires:
-      - name: srv-api
-        group: destinations
-        properties:
-          name: srv-api # must be used in xs-app.json as well
-          url: ~{srv-url}
-          forwardAuthToken: true
-      - name: risk-management-auth
-
-resources:
-  - name: risk-management-auth
-    type: org.cloudfoundry.managed-service
-    parameters:
-      service: xsuaa
-      service-plan: application
-      path: ./xs-security.json
-      config:
-        xsappname: risk-management-${org}-${space}
-        tenant-mode: dedicated
-        role-collections:
-          - name: 'RiskManager-${org}-${space}'
-            description: Manage Risks
-            role-template-references:
-              - $XSAPPNAME.RiskManager
-          - name: 'RiskViewer-${org}-${space}'
-            description: View Risks
-            role-template-references:
-              - $XSAPPNAME.RiskViewer
-        oauth2-configuration:
-          redirect-uris:
-            - https://**.hana.ondemand.com/login/callback # Wildcard redirect to SAP BTP (You might want to make this more exclusive)
-  - name: risk-management-db
-    type: com.sap.xs.hdi-container
-    parameters:
-      service: hana
-      service-plan: hdi-shared
-  - name: risk-management-destination
-    type: org.cloudfoundry.managed-service
-    parameters:
-      service: destination
-      service-plan: lite
+  - builder: custom
+    commands:
+    - npm ci
+    - npx cds build --production
