@@ -5,6 +5,8 @@ connection.properties
 default-*.json
 .cdsrc-private.json
 gen/
+resources/
+dist/
 node_modules/
 target/
 *.sqlite
