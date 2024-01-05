@@ -18,6 +18,7 @@ modules:
     buildpack: nodejs_buildpack
   build-parameters:
     builder: npm
+
 - name: risk-management-db-deployer
   type: hdb
   path: gen/db
@@ -25,6 +26,7 @@ modules:
   - name: risk-management-db
   parameters:
     buildpack: nodejs_buildpack
+
 - name: risk-management
   type: approuter.nodejs
   path: app/
@@ -36,6 +38,7 @@ modules:
       name: srv-api
       url: ~{srv-url}
   - name: risk-management-auth
+  - name: risk-management-html5-repo-rt
   - name: risk-management-destination
     group: destinations
     properties:
@@ -46,6 +49,7 @@ modules:
     disk-quota: 512M
     keep-existing-routes: true
     memory: 512M
+
 - name: risk-management-app-content
   type: com.sap.application.content
   path: .
@@ -64,6 +68,39 @@ modules:
       - riskmanagementfreestyle.zip
       name: risk-management-freestyle
       target-path: resources/
+
+- name: risk-management-ui-destination-content
+  type: com.sap.application.content
+  requires:
+  - name: srv-api
+  - name: risk-management-destination
+    parameters:
+      content-target: true
+  - name: risk-management-html5-repo-host
+  - name: risk-management-auth
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: risk-management-ui_html_repo_host
+          ServiceInstanceName: risk-management-html5-srv
+          ServiceKeyName: risk-management-repo-host-key
+          sap.cloud.service: riskmanagement.service
+        - Authentication: OAuth2UserTokenExchange
+          Name: risk-management-auth
+          ServiceInstanceName: risk-management-auth-srv
+          ServiceKeyName: risk-management-auth-key
+          sap.cloud.service: riskmanagement.service
+        - Authentication: OAuth2UserTokenExchange
+          Name: srv-api
+          TokenServiceInstanceName: risk-management-auth-srv
+          TokenServiceKeyName: risk-management-auth-key
+          URL: ~{srv-api/srv-url}
+          sap.cloud.service: cloud.service
+        existing_destinations_policy: ignore
+  build-parameters:
+    no-source: true
+
 - name: risk-management-fe
   type: html5
   path: app/risk-management
@@ -74,6 +111,7 @@ modules:
     - npm install
     - npm run build:cf
     supported-platforms: []
+
 - name: risk-management-freestyle
   type: html5
   path: app/risk-management-freestyle
@@ -84,10 +122,16 @@ modules:
     - npm install
     - npm run build:cf
     supported-platforms: []
+
 resources:
+
 - name: risk-management-auth
   type: org.cloudfoundry.managed-service
   parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: risk-management-auth-srv
+    service-plan: application
     config:
       oauth2-configuration:
         redirect-uris:
@@ -103,14 +147,13 @@ resources:
         - $XSAPPNAME.RiskViewer
       tenant-mode: dedicated
       xsappname: risk-management-${org}-${space}
-    path: ./xs-security.json
-    service: xsuaa
-    service-plan: application
+
 - name: risk-management-db
   type: com.sap.xs.hdi-container
   parameters:
     service: hana
     service-plan: hdi-shared
+
 - name: risk-management-destination
   type: org.cloudfoundry.managed-service
   parameters:
@@ -124,14 +167,33 @@ resources:
             ProxyType: Internet
             Type: HTTP
             URL: https://ui5.sap.com
+          - Authentication: NoAuthentication
+            HTML5.DynamicDestination: true
+            HTML5.ForwardAuthToken: true
+            Name: srv-api
+            ProxyType: Internet
+            Type: HTTP
+            URL: ~{srv-api/srv-url}
           existing_destinations_policy: update
     service: destination
+    service-name: risk-managemen-destination-service
     service-plan: lite
+  requires:
+  - name: srv-api
+
 - name: risk-management-html5-repo-host
   type: org.cloudfoundry.managed-service
   parameters:
     service: html5-apps-repo
+    service-name: risk-management-html5-srv
     service-plan: app-host
+
+- name: risk-management-html5-repo-rt
+  parameters:
+    service-plan: app-runtime
+    service: html5-apps-repo
+  type: org.cloudfoundry.managed-service
+  
 parameters:
   deploy_mode: html5-repo
   enable-parallel-deployments: true
@@ -141,3 +203,4 @@ build-parameters:
     commands:
     - npm ci
     - npx cds build --production
+    - npx rimraf gen/db/src/gen/data
